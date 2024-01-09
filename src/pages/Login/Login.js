@@ -3,11 +3,11 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const required = (value) => {
-    alert('This field is required!');
+  alert("This field is required!");
 };
 
 const Login = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate();  // Use useNavigate hook instead of useHistory
   const usernameRef = useRef(null);
   const emailRef = useRef(null);
   const passwordRef = useRef(null);
@@ -17,43 +17,45 @@ const Login = () => {
     const username = usernameRef.current.value;
     const useremail = emailRef.current.value;
     const password = passwordRef.current.value;
-    if (useremail ==='' || password === '') {
-      alert('field is empty');
+
+    if (useremail === "" || password === "") {
+      alert("Fields are empty");
+      return;
     }
+
     try {
-      await axios.post("http://localhost:8080/login", {
-        username, useremail, password,
-      }).then(res => {
-        let response = res.data;
-        if (response && response.useremail) {
-          //TODO for now I'm storing email and _id , but change into jsonWebToken(Security)
-          localStorage.setItem("email", response.useremail)
-          localStorage.setItem("_id", response._id)
-          if (response?.role && response.role === 'project') {
-            console.log(response)
-            //TODO project dashboard once role is added to the user data 
-            navigate('/project')
-          } else {
-            navigate('/corporate')
-          }
-          navigate()
+      const res = await axios.post("http://localhost:8081/login", {
+        username,
+        useremail,
+        password,
+      });
+
+      let response = res.data;
+
+      if (response && response.useremail) {
+        localStorage.setItem("email", response.useremail);
+        localStorage.setItem("_id", response._id);
+
+        if (response?.role && response.role === "project") {
+          navigate("/project");
+        } else {
+          navigate("/corporate");
         }
-        else {
-          alert('Login Failed !!! Please Login Again !!')
-          console.log('Authentication Failed');
-        }
-      })
+      } else {
+        alert("Login Failed !!! Please Login Again !!");
+        console.log("Authentication Failed");
+      }
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error:", error);
     }
-  }
+  };
      
   return (
     <div className="login-body">
       <form onSubmit={handleSubmit} className="form">
         <div className="cut"></div>
         <div className="input-container ic1">
-          <label className="login-label" htmlFor="username">Username</label>
+          <label className="login-label">Username</label>
           <input
             type="text"
             className="input"
@@ -65,7 +67,7 @@ const Login = () => {
         </div>
 
         <div className="input-container ic2">
-          <label className="login-label" htmlFor="useremail">Email</label>
+          <label className="login-label" >Email</label>
           <input
             type="email"
             className="input"
@@ -77,7 +79,7 @@ const Login = () => {
         </div>
 
         <div className="input-container ic2">
-          <label className="login-label" htmlFor="new-password">Password</label>
+          <label className="login-label">Password</label>
           <input
             type="password"
             className="input"

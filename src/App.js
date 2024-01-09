@@ -7,15 +7,17 @@ import PackageData from './components/PackageData/PackageData';
 
 function App() {
   return (
+    <div>
     <Router>
       <Routes>
         <Route path='/' element={<Login />} />
-        <Route path='/projects' element={<Projects />} />
+        <Route path='/project' element={<Projects />} />
         <Route path='/corporate' element={<Corporate />} />
         <Route path='/package-data' element={<PackageData />} />
       </Routes>
 
-    </Router>
+      </Router>
+      </div>
 
 
   );

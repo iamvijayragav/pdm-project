@@ -2,13 +2,13 @@ import React, { useEffect, useState } from "react";
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Deligation from "../../components/Functions/Deligation";
 import ProjectAccess from "../../components/Functions/ProjectAccess";
-import AddProjects from "../../components/Functions/AddProjects";
+import AddProject from "../../components/Functions/AddProject";
 import Update from "../../components/Functions/Update";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 
-const CorporateDashboard = () => {
+const Corporate = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isValidUser, setIsValidUser] = useState(false);
 
@@ -19,7 +19,7 @@ const CorporateDashboard = () => {
       const email = localStorage.getItem('email')
       const _id = localStorage.getItem('_id')
       setIsLoading(true)
-      await axios.post('http://localhost:8080/verify', { email, _id,currRole:'corporate' })
+      await axios.post('http://localhost:8081/verify', {_id,currRole:'corporate' })
         .then(
           res => {
             console.log(res)
@@ -47,9 +47,9 @@ const CorporateDashboard = () => {
 
   return (
     <div>
+      <button onClick={logout}>logout</button>
       {isValidUser && <div>
-        <Sidebar />
-        <AddProjects />
+        <AddProject />
         <Deligation />
         <ProjectAccess />
         <Update />
@@ -60,4 +60,4 @@ const CorporateDashboard = () => {
 
 }
 
-export default CorporateDashboard;
+export default Corporate;

@@ -2,7 +2,7 @@ import { useState } from "react";
 import Popup from '../Popup/Popup';
 
 const PackageData = ({ dataBasename }) => {
-    const BackendUrl = 'http://localhost:8080'; // Replace with your backend server URL
+    const BackendUrl = 'http://localhost:8081'; 
     const [newProjectCode, setNewProjectCode] = useState('');
     const CATEGORY = [
         {

@@ -1,53 +1,82 @@
-const express = require('express');
-const app = express();
-const mongoose = require('mongoose');
-var bodyParser = require('body-parser');
+const express = require("express");
+const app = express()
+const mongoose = require("mongoose");
+var bodyParser = require("body-parser");
 var cors = require('cors');
-var ModalData = require('../modals/CategoryModal');
-
+const UserData = require("../modals/Login");
+const AddProject = require('../modals/AddProject');
 app.use(cors());
 app.use(bodyParser.urlencoded({
-    extended:true,
-}));
-app.use(express.json);
+    extended: true
+}))
+app.use(express.json());
 
-const ConnectionString = 'mongodb://localhost:27017';
-const Url = "mongodb://localhost:27017/ProjectUserDetailDatabase";
-
-mongoose.connect(Url)
-    .then(()=>console.log("Connected To Database"))
+const ChangeUrl = 'mongodb://localhost:27017/';
+const mongoUrl = "mongodb://localhost:27017/ProjectUserDetailDatabase";
+mongoose.connect(mongoUrl, {
+    useNewUrlParser: true,
+    useUnifiedTopology:true,
+})
+    .then(() => {console.log("connected to database");})
     .catch((e) => console.log(e));
-    
-app.post('/login', async (req, res) => {
-    let email = req.body.useremail;
-    let password = req.body.password;
+
+app.post("/login", async (req, res) => {
+    var email = req.body.useremail;
+    var password = req.body.password;
     try {
-        const OldUser = await ModalData.findOne({ useremail: email });
-        if (password && password === OldUser.password) {
-            return res.json(OldUser).status(200);
+        const oldUser = await UserData.findOne({ useremail: email });
+        console.log(password, oldUser)
+        if (password && password === oldUser.password) {
+            //todo hashing
+            return res.json(oldUser).status(200);
         }
-    } catch (err) {
-        console.log(err);
-        return res.send({ status: 'Error' }).status(409);
+    } catch (error) {
+        console.log(error);
+        res.send({ status: "error" }).status(409)
+    }
+});
+
+app.post("/verify", async (req, res) => {
+    const { _id, currRole } = req.body;
+
+    try {
+        const oldUser = await UserData.findOne({ _id });
+        // console.log(password,oldUser)
+        if (oldUser && oldUser.role === currRole) {
+            //todo hashing
+            return res.send({ validUser: true });
+        } else {
+            return res.send({ validUser: false }).status(403);
+        }
+    } catch (error) {
+        console.log(error);
+        res.send({ status: "error" }).status(409)
     }
 });
 
 
-app.post("/verify", async (req, res) => {
-    const { email, _id, currRole } = req.body;
-
+app.post("/add-project", async (req, res) => {
+    console.log(req.body);
+    const { projectCode, projectName } = req.body;
+    const dataBase = projectCode + '_' + projectName;
+    console.log(projectCode,projectName,dataBase);
     try {
-        const OldUser = await ModalData.findOne({ _id });
+        const newProject = new AddProject({
+            projectCode,
+            projectName,
+            database:dataBase,
+        })
+        const savedProject = await newProject.save();
+        res.status(201).json(savedProject);
 
-        if (OldUser && OldUser.role === currRole) {
-            //todo Hashing....
-            return res.send({ validUser: true })
-        } else {
-            return res.send({ validUser: false }).status(403)
-        }
     } catch (err) {
-        res.send({ status: "Error" }).status(409);
+        console.error("Error Adding Projects: ",err);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
-})
-app.listen(8080, () =>
-    console.log("Server Started in 8080"));
+
+    
+});
+
+app.listen(8081, () => {
+    console.log("server started");
+});
