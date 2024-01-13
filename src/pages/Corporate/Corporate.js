@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Sidebar from '../../components/Sidebar/Sidebar';
-import Deligation from "../../components/Functions/Deligation";
+import Deligation from "../../components/Functions/AddUser";
 import ProjectAccess from "../../components/Functions/ProjectAccess";
 import AddProject from "../../components/Functions/AddProject";
 import Update from "../../components/Functions/Update";
@@ -19,25 +19,25 @@ const Corporate = () => {
       const email = localStorage.getItem('email')
       const _id = localStorage.getItem('_id')
       setIsLoading(true)
-      await axios.post('http://localhost:8081/verify', {_id,currRole:'corporate' })
+      await axios.post('http://localhost:8081/verify', { _id, currRole: 'corporate' })
         .then(
           res => {
             console.log(res)
-              if (res && res.data.validUser) {
-                setIsValidUser(true)
-              } else {
-                navigate('/')
-              }
+            if (res && res.data.validUser) {
+              setIsValidUser(true)
+            } else {
+              navigate('/')
             }
-      ).catch(err => {
-        console.log(err)
+          }
+        ).catch(err => {
+          console.log(err)
           setIsValidUser(false);
           setIsLoading(false);
           navigate('/')
         })
     };
     fetchApi();
-  },[])
+  }, [])
 
   const logout = () => {
     localStorage.removeItem('email')
@@ -50,10 +50,14 @@ const Corporate = () => {
       <button onClick={logout}>logout</button>
       {isValidUser && <div>
         <AddProject />
+        <hr style={{ color: 'green' }} />
         <Deligation />
-        <ProjectAccess />
-        <Update />
-      </div >}
+        <hr style={{ color: 'green' }} />
+        <ProjectAccess style={{ color: 'green' }} />
+        <hr />
+        <Update style={{ color: 'green' }} />
+      </div>
+      }
     </div>
 
   );

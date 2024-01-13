@@ -1,7 +1,7 @@
 import './App.css';
 import Login from './pages/Login/Login';
 import { Routes, Route, BrowserRouter as Router } from "react-router-dom";
-import Projects from './pages/Project/Projects';
+import Project from './pages/Project/Projects';
 import Corporate from './pages/Corporate/Corporate';
 import PackageData from './components/PackageData/PackageData';
 
@@ -11,7 +11,7 @@ function App() {
     <Router>
       <Routes>
         <Route path='/' element={<Login />} />
-        <Route path='/project' element={<Projects />} />
+        <Route path='/project' element={<Project />} />
         <Route path='/corporate' element={<Corporate />} />
         <Route path='/package-data' element={<PackageData />} />
       </Routes>

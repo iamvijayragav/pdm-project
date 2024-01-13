@@ -2,7 +2,7 @@ import { React, useState, useEffect } from "react";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import { useNavigate } from "react-router-dom";
 import axios from 'axios';
-const Projects = () => {
+const Project = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [isValidUser, setIsValidUser] = useState(false);
     const navigate = useNavigate();
@@ -45,4 +45,4 @@ const Projects = () => {
 
 }
 
-export default Projects;
+export default Project;

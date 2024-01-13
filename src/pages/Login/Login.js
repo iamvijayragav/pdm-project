@@ -14,26 +14,25 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const username = usernameRef.current.value;
-    const useremail = emailRef.current.value;
+    const name = usernameRef.current.value;
+    const email = emailRef.current.value;
     const password = passwordRef.current.value;
 
-    if (useremail === "" || password === "") {
+    if (email === "" || password === "") {
       alert("Fields are empty");
       return;
     }
 
     try {
       const res = await axios.post("http://localhost:8081/login", {
-        username,
-        useremail,
+        name,
+        email,
         password,
       });
 
       let response = res.data;
-
-      if (response && response.useremail) {
-        localStorage.setItem("email", response.useremail);
+      if (response && response.email) {
+        localStorage.setItem("email", response.email);
         localStorage.setItem("_id", response._id);
 
         if (response?.role && response.role === "project") {
@@ -42,8 +41,7 @@ const Login = () => {
           navigate("/corporate");
         }
       } else {
-        alert("Login Failed !!! Please Login Again !!");
-        console.log("Authentication Failed");
+        alert("Login Failed !!! Enter Valid Credentials !");
       }
     } catch (error) {
       console.error("Error:", error);
@@ -59,7 +57,7 @@ const Login = () => {
           <input
             type="text"
             className="input"
-            name="username"
+            name="name"
             autoComplete="username"
             ref={usernameRef}
             validations={[required]}
@@ -71,9 +69,9 @@ const Login = () => {
           <input
             type="email"
             className="input"
-            name="useremail"
+            name="email"
             ref={emailRef}
-            autoComplete="useremail"
+            autoComplete="email"
             validations={[required]}
           />
         </div>

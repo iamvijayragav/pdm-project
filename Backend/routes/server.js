@@ -1,10 +1,14 @@
+
+const { login } = require('../Controller/LoginController');
 const express = require("express");
 const app = express()
 const mongoose = require("mongoose");
 var bodyParser = require("body-parser");
 var cors = require('cors');
-const UserData = require("../modals/Login");
+const User = require("../modals/UserInfo");
+
 const AddProject = require('../modals/AddProject');
+
 app.use(cors());
 app.use(bodyParser.urlencoded({
     extended: true
@@ -13,35 +17,16 @@ app.use(express.json());
 
 const ChangeUrl = 'mongodb://localhost:27017/';
 const mongoUrl = "mongodb://localhost:27017/ProjectUserDetailDatabase";
-mongoose.connect(mongoUrl, {
-    useNewUrlParser: true,
-    useUnifiedTopology:true,
-})
-    .then(() => {console.log("connected to database");})
+mongoose.connect(mongoUrl)
+    .then(() => { console.log("connected to database"); })
     .catch((e) => console.log(e));
 
-app.post("/login", async (req, res) => {
-    var email = req.body.useremail;
-    var password = req.body.password;
-    try {
-        const oldUser = await UserData.findOne({ useremail: email });
-        console.log(password, oldUser)
-        if (password && password === oldUser.password) {
-            //todo hashing
-            return res.json(oldUser).status(200);
-        }
-    } catch (error) {
-        console.log(error);
-        res.send({ status: "error" }).status(409)
-    }
-});
+app.post("/login", login);
 
 app.post("/verify", async (req, res) => {
     const { _id, currRole } = req.body;
-
     try {
-        const oldUser = await UserData.findOne({ _id });
-        // console.log(password,oldUser)
+        const oldUser = await User.findOne({ _id });
         if (oldUser && oldUser.role === currRole) {
             //todo hashing
             return res.send({ validUser: true });
@@ -56,26 +41,56 @@ app.post("/verify", async (req, res) => {
 
 
 app.post("/add-project", async (req, res) => {
-    console.log(req.body);
+
     const { projectCode, projectName } = req.body;
     const dataBase = projectCode + '_' + projectName;
-    console.log(projectCode,projectName,dataBase);
+    console.log(projectCode, projectName, dataBase);
     try {
         const newProject = new AddProject({
-            projectCode,
-            projectName,
-            database:dataBase,
+            projectcode: projectCode,
+            projectname: projectName,
+            database: dataBase,
         })
         const savedProject = await newProject.save();
         res.status(201).json(savedProject);
 
     } catch (err) {
-        console.error("Error Adding Projects: ",err);
+        console.error("Error Adding Projects: ", err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 
-    
+
 });
+
+app.post('/add-user', async (req, res) => {
+    const {
+        UserName,
+        UserId,
+        Email,
+        Password,
+        CompanyName,
+        Role,
+    } = req.body;
+
+    try {
+        const filter = { $or: [{ email: Email }, { user_id: UserId }] };
+        const update = {
+            name: UserName,
+            user_id: UserId,
+            email: Email,
+            password: Password,
+            company_name: CompanyName,
+            role: Role,
+        };
+        const options = { upsert: true, new: true };
+        const updatedUser = await User.findOneAndUpdate(filter, update, options);
+        res.status(200).json(updatedUser);
+    } catch (err) {
+        console.error("Error Adding Users: ", err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+})
+
 
 app.listen(8081, () => {
     console.log("server started");
