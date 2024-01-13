@@ -4,9 +4,23 @@ function ProjectAccess() {
   const [Detail, setDetail] = useState();
   const [UniqueCompanyName, setUniqueCompanyName] = useState([]);
   const [User, setUser] = useState([]);
+  const [Project, setProject] = useState([]);
+
   
 
+  const HandleSubmit = () => {
+    return 0;
+  };
 
+  const fetchProject = async () => {
+    try {
+      const ProjectList = await axios.post("http://localhost:8081/api/fetch-project")
+      setProject(ProjectList.data);
+    }
+    catch (err) {
+      console.error("Error in fethcing Projects");
+    }
+  }
 
   const fetchUser = (e) => {
     const { value } = e.target;
@@ -14,18 +28,19 @@ function ProjectAccess() {
     setUser(filteredUsers);
   }
 
-  const fetchProject = async () => {
+  const fetchCompany = async () => {
     try {
-      const ProjectList = await axios.post("http://localhost:8081/api/fetch-project");
-      setDetail(ProjectList.data);
-      const uniqueNames = [...new Set(ProjectList.data.map(company => company.company_name))];
+      const CompanyList = await axios.post("http://localhost:8081/api/fetch-user");
+      setDetail(CompanyList.data);
+      const uniqueNames = [...new Set(CompanyList.data.map(company => company.company_name))];
       setUniqueCompanyName(uniqueNames);
     } catch (err) {
-      console.error("Error in Fetching Projects", err);
+      console.error("Error in Fetching Users", err);
     }
   }
 
   useEffect(() => {
+    fetchCompany();
     fetchProject();
   }, [])
 
@@ -33,33 +48,39 @@ function ProjectAccess() {
 
   return (
     <>
-      <form onSubmit={() => { }}>
+      <form onSubmit={HandleSubmit}>
         <div className="project-access-container">
           <label>
-            <select type="text" name="company-name" onChange={fetchUser}>
+            <select type="text" name="company-name" onChange={fetchUser} defaultValue="select">
+            <option value="select" disabled>Select Company</option>
               {
-                UniqueCompanyName.map((companies,id) => (
+                UniqueCompanyName.map((companies, id) => (
                   <option key={id} value={companies}>{companies}</option>
                 ))
               }
             </select>
           </label>
           <label>
-            <select type="text" name="user-name">
+            <select type="text" name="user-name" defaultValue="select">
+            <option value="select" disabled>Select User</option>
               {User.map((user) => (
-                <option key={user._id}>{ user.name} </option>
+                <option key={user._id}>{user.name} </option>
               )) }
             </select>
           </label>
           <label>
-            <select type="text" name="project-name">
-              { }
+            <select type="text" name="project-name" defaultValue="select">
+            <option value="select" disabled>Select Project</option>
+              {Project.map((project) => (
+                <option key={ project._id}> { project.projectname}</option>
+              ))}
             </select>
           </label>
           <label>
-            <select type="text" name="project-access">
-              <option value={"read"} />
-              <option value={"write"} />
+            <select type="text" name="project-access" defaultValue="select">
+            <option value="select" disabled>Select</option>
+              <option value="read">read</option>
+              <option value="write">write</option> 
             </select>
           </label>
           <input type="button" value="Grant Access" />

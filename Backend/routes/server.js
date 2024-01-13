@@ -6,7 +6,6 @@ const mongoose = require("mongoose");
 var bodyParser = require("body-parser");
 var cors = require('cors');
 const User = require("../modals/UserInfo");
-
 const AddProject = require('../modals/AddProject');
 
 app.use(cors());
@@ -91,9 +90,19 @@ app.post('/add-user', async (req, res) => {
     }
 })
 
-app.post("/api/fetch-project", async (req, res) => {
+app.post("/api/fetch-user", async (req, res) => {
     try {
         const Project = await User.find({});
+        res.status(200).json(Project);
+    } catch (err) {
+        console.log("Error in Fetching Users", err);
+        res.status(500).json({ error: "Error in Fetching Users." })
+    }
+})
+
+app.post("/api/fetch-project", async (req, res) => {
+    try {
+        const Project = await AddProject.find({});
         res.status(200).json(Project);
     } catch (err) {
         console.log("Error in Fetching Projects", err);
