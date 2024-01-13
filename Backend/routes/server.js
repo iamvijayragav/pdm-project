@@ -91,6 +91,15 @@ app.post('/add-user', async (req, res) => {
     }
 })
 
+app.post("/api/fetch-project", async (req, res) => {
+    try {
+        const Project = await User.find({});
+        res.status(200).json(Project);
+    } catch (err) {
+        console.log("Error in Fetching Projects", err);
+        res.status(500).json({ error: "Error in Fetching Projects." })
+    }
+})
 
 app.listen(8081, () => {
     console.log("server started");
