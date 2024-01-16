@@ -1,22 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-function ProjectAccess() {
+const ProjectAccess = () => {
   const [Detail, setDetail] = useState([]);
   const [UniqueCompanyName, setUniqueCompanyName] = useState([]);
   const [User, setUser] = useState([]);
   const [Project, setProject] = useState([]);
   const [formData, setFormData] = useState({
     companyName: '',
-    userName: '',
-    projectName: '',
-    projectAccess: '',
+    userId: '',
+    projectCode: '',
+    Access: '',
   });
 
-  const HandleSubmit = () => {
-    console.log('Submitted Data:', formData);
-      };
-
+  const HandleSubmit = async () => {
+    
+    try {
+      const Result =await axios.post("http://localhost:8081/api/upload-access",formData);
+      alert("Success.")
+    } catch (err) {
+      console.error("Error in Submitting Data.");
+      alert("Error in Submitting Data");
+    }
+  }
   const fetchProject = async () => {
     try {
       const ProjectList = await axios.post("http://localhost:8081/api/fetch-project");
@@ -35,7 +41,7 @@ function ProjectAccess() {
     setFormData(prevData => ({
       ...prevData,
       userName: '',
-      projectName: '',
+      projectCode: '',
     }));
   };
 
@@ -90,34 +96,34 @@ function ProjectAccess() {
               onChange={(e) => {
                 setFormData(prevData => ({
                   ...prevData,
-                  userName: e.target.value,
+                  userId: e.target.value,
                 }));
               }}
-              value={formData.userName}
+              value={formData.userId}
               required
             >
               <option value="" disabled>Select User</option>
               {User.map((user) => (
-                <option key={user._id} value={user.name}>{user.name}</option>
+                <option key={user._id} value={user.user_id}>{user.user_id}</option>
               ))}
             </select>
           </label>
           <label>
             <select
               type="text"
-              name="project-name"
+              name="project-code"
               onChange={(e) => {
                 setFormData(prevData => ({
                   ...prevData,
-                  projectName: e.target.value,
+                  projectCode: e.target.value,
                 }));
               }}
-              value={formData.projectName}
+              value={formData.projectCode}
               required
             >
               <option value="" disabled>Select Project</option>
               {Project.map((project) => (
-                <option key={project._id} value={project.projectname}>{project.projectname}</option>
+                <option key={project._id} value={project.project_code}>{project.project_code}</option>
               ))}
             </select>
           </label>
@@ -128,10 +134,10 @@ function ProjectAccess() {
               onChange={(e) => {
                 setFormData(prevData => ({
                   ...prevData,
-                  projectAccess: e.target.value,
+                  Access: e.target.value,
                 }));
               }}
-              value={formData.projectAccess}
+              value={formData.Access}
               required
             >
               <option value="" disabled>Select Project Access</option>

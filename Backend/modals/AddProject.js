@@ -1,8 +1,8 @@
 const mongoose=require("mongoose");
 const Projects=new mongoose.Schema(
     {
-        projectname:String,
-        projectcode:String,
+        project_name:String,
+        project_code:String,
         database:String,
     },
     {

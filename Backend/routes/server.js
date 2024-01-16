@@ -1,10 +1,12 @@
 
-const { login } = require('../Controller/LoginController');
 const express = require("express");
 const app = express()
 const mongoose = require("mongoose");
 var bodyParser = require("body-parser");
 var cors = require('cors');
+
+const { login,FetchUser } = require('../Controller/LoginController');
+const Project = require('../modals/Project');
 const User = require("../modals/UserInfo");
 const AddProject = require('../modals/AddProject');
 
@@ -43,11 +45,11 @@ app.post("/add-project", async (req, res) => {
 
     const { projectCode, projectName } = req.body;
     const dataBase = projectCode + '_' + projectName;
-    console.log(projectCode, projectName, dataBase);
+    
     try {
         const newProject = new AddProject({
-            projectcode: projectCode,
-            projectname: projectName,
+            project_code: projectCode,
+            project_name: projectName,
             database: dataBase,
         })
         const savedProject = await newProject.save();
@@ -100,13 +102,25 @@ app.post("/api/fetch-user", async (req, res) => {
     }
 })
 
-app.post("/api/fetch-project", async (req, res) => {
+app.post("/api/fetch-project", FetchUser)
+
+app.post("/api/upload-access", async (req, res) => {
+    const { Access, projectCode, userId } = req.body;
+
     try {
-        const Project = await AddProject.find({});
-        res.status(200).json(Project);
+        const filter = {$and: [{ user_id : userId } , { project_code : projectCode }] }
+        const update = {
+            project_code: projectCode,
+            user_id: userId,
+            access: Access
+        };
+
+        const options = { upsert: true, new: true };
+        const UpdatedAccess = await Project.findOneAndUpdate(filter, update, options);
+        res.status(200).json(UpdatedAccess);
     } catch (err) {
-        console.log("Error in Fetching Projects", err);
-        res.status(500).json({ error: "Error in Fetching Projects." })
+        console.log("Error in Giving Access", err);
+        res.send({error : "Error in Giving Permissions"})
     }
 })
 
