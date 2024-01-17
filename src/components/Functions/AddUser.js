@@ -1,75 +1,96 @@
 import axios from 'axios';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 function AddUser() {
-  const [inputList, setInputList] = useState([
-    {
-      'UserName': '',
-      'UserId': '',
-      'Email': '',
-      'Password': '',
-      'CompanyName': '',
-      'Role': '',
-    }
-  ]);
+  const PAGE_SIZE = 5;
 
+  const initialInputState = {
+    'name': '',
+    'user_id': '',
+    'email': '',
+    'password': '',
+    'company_name': '',
+    'role': '',
+  };
+
+  const [inputList, setInputList] = useState(initialInputState);
   const [addedRows, setAddedRows] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
-  const [editIndex, setEditIndex] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const tableHeaders = [
-    { id: 1, header: 'User Name', key: 'UserName' },
-    { id: 2, header: 'User ID', key: 'UserId' },
-    { id: 3, header: 'Email', key: 'Email' },
-    { id: 4, header: 'Password', key: 'Password' },
-    { id: 5, header: 'Company Name', key: 'CompanyName' },
-    { id: 6, header: 'Role', key: 'Role' },
+    { id: 1, header: 'User Name', key: 'name' },
+    { id: 2, header: 'User ID', key: 'user_id' },
+    { id: 3, header: 'Email', key: 'email' },
+    { id: 4, header: 'Password', key: 'password' },
+    { id: 5, header: 'Company Name', key: 'company_name' },
+    { id: 6, header: 'role', key: 'role' },
   ];
 
-  const changeHandler = (e, rowIndex, key) => {
-    const updatedInputList = [...inputList];
-    updatedInputList[rowIndex][key] = e.target.value;
+  const changeHandler = (e, key) => {
+    const updatedInputList = { ...inputList };
+    updatedInputList[key] = e.target.value;
     setInputList(updatedInputList);
   };
 
-  const addUser = () => {
-    if (inputList[0]['UserName'].trim() === '' || inputList[0]['UserId'].trim() === '' || inputList[0]['Email'].trim() === '') {
-      alert('User Name, User ID and Email are required.');
+  const fetchUser = async () => {
+    try {
+      const response = await axios.post("http://localhost:8081/api/fetch-user");
+      setAddedRows(response.data);
+    } catch (err) {
+      console.error("Error in Fetching Users", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
+
+  const addUser = async () => {
+    console.log(inputList,"onputlidt");
+    if (inputList.name.trim() === '' || inputList.user_id.trim() === '' || inputList.email.trim() === '') {
+      alert('User Name, User ID and email are required.');
       return;
     }
 
     if (isEditing) {
-      const updatedRows = [...addedRows];
-      updatedRows[editIndex] = inputList[0];
-      setAddedRows(updatedRows);
       setIsEditing(false);
-      setEditIndex(null);
-    } else {
-      setAddedRows([...addedRows, ...inputList]);
     }
 
     try {
-      const result = axios.post('http://localhost:8081/add-user', inputList[0]);
+      const result = axios.post('http://localhost:8081/add-user', inputList);
       alert("User Added Successfully", result.status);
     } catch (err) {
       console.error("Error in Adding Projects: ", err);
     }
-
-    setInputList([{ 'UserName': '', 'UserId': '', 'Email': '', 'Password': '', 'CompanyName': '', 'Role':'' }]);
+    fetchUser();
+    setInputList(initialInputState);
   };
 
-  const deleteHandler = (index) => {
-    const updatedRows = [...addedRows];
-    updatedRows.splice(index, 1);
-    setAddedRows(updatedRows);
+  const deleteHandler = async (email) => {
+    try {
+      await axios.post("http://localhost:8081/api/delete-user", { email:email })
+      
+    } catch (err) {
+      console.error("Error in Deleting User: ", err);
+    }
+    fetchUser();
+    setInputList(initialInputState)
   };
 
-  const editHandler = (index) => {
+  const editHandler = (Email) => {
+    const FilterUser = addedRows.find(user => user.email === Email)
     setIsEditing(true);
-    setEditIndex(index);
-    console.log([addedRows[index]], "jj");
-    setInputList([addedRows[index]]);
+    setInputList(FilterUser);
   };
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+  };
+
+  const startIndex = (currentPage - 1) * PAGE_SIZE;
+  const endIndex = startIndex + PAGE_SIZE;
+  const currentRows = addedRows.slice(startIndex, endIndex);
 
   return (
     <div className='delegation-container'>
@@ -77,81 +98,94 @@ function AddUser() {
         <label>User Name:
           <input
             type="text"
-            name="userName"
-            value={inputList[0].UserName}
-            onChange={(e) => changeHandler(e, 0, 'UserName')}
+            name="name"
+            value={inputList['name']}
+            onChange={(e) => changeHandler(e, 'name')}
           />
         </label><br />
         <label>User Id :
           <input
             type="text"
-            name="userId"
-            value={inputList[0].UserId}
-            onChange={(e) => changeHandler(e, 0, 'UserId')}
+            name="user_id"
+            value={inputList.user_id}
+            onChange={(e) => changeHandler(e,  'user_id')}
           />
         </label><br />
-        <label>Email :
+        <label>email :
           <input
             type="email"
             name="email"
-            value={inputList[0].Email}
-            onChange={(e) => changeHandler(e, 0, 'Email')}
+            value={inputList.email}
+            onChange={(e) => changeHandler(e, 'email')}
           />
         </label><br />
-        <label>Password :
+        <label>password :
           <input
             type="password"
             name="password"
-            value={inputList[0].Password}
-            onChange={(e) => changeHandler(e, 0, 'Password')}
+            value={inputList.password}
+            onChange={(e) => changeHandler(e, 'password')}
           />
         </label><br />
         <label>Company Name :
           <input
             type="text"
-            name="companyName"
-            value={inputList[0].CompanyName}
-            onChange={(e) => changeHandler(e, 0, 'CompanyName')}
+            name="company_name"
+            value={inputList.company_name}
+            onChange={(e) => changeHandler(e, 'company_name')}
           />
         </label>
-        <label>Role :
+        <label>role :
           <input
             type="text"
             name="role"
-            value={inputList[0].Role}
-            onChange={(e) => changeHandler(e, 0, 'Role')}
+            value={inputList.role}
+            onChange={(e) => changeHandler(e, 'role')}
           />
         </label>
         <input type="button" value={isEditing ? 'Update' : 'Add User'} onClick={addUser} />
       </form>
-      {addedRows.length > 0 && (
-        <div>
-          <h2>Added Rows</h2>
-          <table>
-            <thead>
-              <tr>
-                {tableHeaders.map((item) => (
-                  <th key={item.id}>{item.header}</th>
-                ))}
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {addedRows.map((row, rowIndex) => (
-                <tr key={rowIndex}>
-                  {tableHeaders.map((item) => (
-                    <td key={item.id}>{row[item.key]}</td>
-                  ))}
-                  <td>
-                    <p onClick={() => deleteHandler(rowIndex)}>delete</p>
-                    <p onClick={() => editHandler(rowIndex)}>edit</p>
-                  </td>
-                </tr>
+      <div>
+        <h2>Added Rows</h2>
+        <table>
+          <thead>
+            <tr>
+              {tableHeaders.map((item) => (
+                <th key={item.id}>{item.header}</th>
               ))}
-            </tbody>
-          </table>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {currentRows.map((row, index) => (
+              <tr key={row._id}>
+                {tableHeaders.map((item) => (
+                  <td key={item.id}>{row[item.key]}</td>
+                ))}
+                <td>
+                  <p onClick={() => deleteHandler(row.email)}>delete</p>
+                  <p onClick={() => editHandler(row.email)}>edit</p>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div>
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            Prev
+          </button>
+          <span>Page {currentPage}</span>
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={endIndex >= addedRows.length}
+          >
+            Next
+          </button>
         </div>
-      )}
+      </div>
     </div>
   );
 }

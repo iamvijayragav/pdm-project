@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 var bodyParser = require("body-parser");
 var cors = require('cors');
 
-const { login,FetchUser } = require('../Controller/LoginController');
+const { login,FetchProject, FetchUser ,AddingProject, AddUser} = require('../Controller/LoginController');
 const Project = require('../modals/Project');
 const User = require("../modals/UserInfo");
 const AddProject = require('../modals/AddProject');
@@ -41,68 +41,27 @@ app.post("/verify", async (req, res) => {
 });
 
 
-app.post("/add-project", async (req, res) => {
+app.post("/add-project", AddingProject);
 
-    const { projectCode, projectName } = req.body;
-    const dataBase = projectCode + '_' + projectName;
-    
+app.post('/add-user', AddUser)
+
+app.post("/api/fetch-user", FetchUser);
+
+app.post("/api/fetch-project", FetchProject);
+
+app.post("/api/delete-user", async (req, res) => {
+    const { email } = req.body;
     try {
-        const newProject = new AddProject({
-            project_code: projectCode,
-            project_name: projectName,
-            database: dataBase,
-        })
-        const savedProject = await newProject.save();
-        res.status(201).json(savedProject);
-
+        const DeletedUser = await User.findOneAndDelete({ email });
+        if (!DeletedUser) {
+            res.status(404).json({error:'User Not Found'})
+        }
+        res.json(DeletedUser);
     } catch (err) {
-        console.error("Error Adding Projects: ", err);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
-
-
-});
-
-app.post('/add-user', async (req, res) => {
-    const {
-        UserName,
-        UserId,
-        Email,
-        Password,
-        CompanyName,
-        Role,
-    } = req.body;
-
-    try {
-        const filter = { $or: [{ email: Email }, { user_id: UserId }] };
-        const update = {
-            name: UserName,
-            user_id: UserId,
-            email: Email,
-            password: Password,
-            company_name: CompanyName,
-            role: Role,
-        };
-        const options = { upsert: true, new: true };
-        const updatedUser = await User.findOneAndUpdate(filter, update, options);
-        res.status(200).json(updatedUser);
-    } catch (err) {
-        console.error("Error Adding Users: ", err);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({error:" Error in delete user"})
+        
     }
 })
-
-app.post("/api/fetch-user", async (req, res) => {
-    try {
-        const Project = await User.find({});
-        res.status(200).json(Project);
-    } catch (err) {
-        console.log("Error in Fetching Users", err);
-        res.status(500).json({ error: "Error in Fetching Users." })
-    }
-})
-
-app.post("/api/fetch-project", FetchUser)
 
 app.post("/api/upload-access", async (req, res) => {
     const { Access, projectCode, userId } = req.body;
