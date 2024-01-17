@@ -1,7 +1,7 @@
 import './App.css';
 import Login from './pages/Login/Login';
 import { Routes, Route, BrowserRouter as Router } from "react-router-dom";
-import Project from './pages/Project/Projects';
+import Project from './pages/Project/Project.js';
 import Corporate from './pages/Corporate/Corporate';
 import PackageData from './components/PackageData/PackageData';
 
