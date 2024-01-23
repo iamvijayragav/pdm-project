@@ -43,8 +43,6 @@ const PackageData = ({ dataBasename }) => {
     const [inputs, setInputs] = useState({ 'prjcat': 'Topside Contractor - Category TSA' });
     const [btnPopUp, setBtnPopUp] = useState(false);
 
-    const db = dataBasename;
-    console.log(db);
     const handleSelect = (e) => {
         for (let i = 0; i < CATEGORY.length; i++) {
             if (CATEGORY[i].option === e) {
@@ -70,7 +68,7 @@ const PackageData = ({ dataBasename }) => {
         event.preventDefault();
     }
 
-    const handleExport = async () => {
+    const handleExport = () => {
         setBtnPopUp(true);
     }
 
@@ -89,7 +87,7 @@ const PackageData = ({ dataBasename }) => {
                             </select></label>
                         <br />
                         <label>Package Clean category
-                            <input className="form-input" name="cleancat" value={choosedCategory} /></label><br />
+                            <input className="form-input" name="cleancat" value={choosedCategory} onChange={()=>{}}/></label><br />
                         <label>Package Title
                             <input type="text" id="input-field" className="form-input" name="pactitle" onChange={changeHandler} value={inputs.pactitle || ""} /></label><br />
                         <label>RFQ Number

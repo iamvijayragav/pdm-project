@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Sidebar from '../../components/Sidebar/Sidebar';
-import Deligation from "../../components/Functions/AddUser";
+import AddUser from "../../components/Functions/AddUser";
 import ProjectAccess from "../../components/Functions/ProjectAccess";
 import AddProject from "../../components/Functions/AddProject";
 import Update from "../../components/Functions/Update";
@@ -51,7 +51,7 @@ const Corporate = () => {
       {isValidUser && <div>
         <AddProject />
         <hr style={{ color: 'green' }} />
-        <Deligation />
+        <AddUser />
         <hr style={{ color: 'green' }} />
         <ProjectAccess style={{ color: 'green' }} />
         <hr />

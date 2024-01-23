@@ -83,6 +83,17 @@ app.post("/api/upload-access", async (req, res) => {
     }
 })
 
+
+app.post('/api/fetch-project-access', async (req, res) => {
+    try {
+        const ProjectAccess = await Project.find({});
+        res.status(200).json(ProjectAccess);
+    } catch (err) {
+        console.log("Error in Fetching Access", err);
+        res.status(500).json({ error: "Error in Fetching Access." })
+    }
+});
+
 app.listen(8081, () => {
     console.log("server started");
 });

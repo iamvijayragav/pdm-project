@@ -47,7 +47,6 @@ function AddUser() {
   }, []);
 
   const addUser = async () => {
-    console.log(inputList,"onputlidt");
     if (inputList.name.trim() === '' || inputList.user_id.trim() === '' || inputList.email.trim() === '') {
       alert('User Name, User ID and email are required.');
       return;

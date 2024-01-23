@@ -34,6 +34,7 @@ const Login = () => {
       if (response && response.email) {
         localStorage.setItem("email", response.email);
         localStorage.setItem("_id", response._id);
+        localStorage.setItem("user_id", response.user_id);
 
         if (response?.role && response.role === "project") {
           navigate("/project");
