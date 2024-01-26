@@ -1,8 +1,7 @@
 const mongoose=require("mongoose");
 
-function CategoryModal({ Category }) {
-    const Schema = new mongoose.Schema(
-        {
+function CategoryModal( Category ) {
+    const Schema = new mongoose.Schema({
             'New_SDRL_Code': String,
             [`${Category}_Deliverable_Requirement`]: String,
             [`${Category}_Submit_with_Bid`]: String,

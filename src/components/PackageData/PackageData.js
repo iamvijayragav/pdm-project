@@ -1,8 +1,9 @@
 import { useState } from "react";
 import Popup from '../Popup/Popup';
+import axios from 'axios';
 
 const PackageData = ({ dataBasename }) => {
-    const BackendUrl = 'http://localhost:8081'; 
+    const BackendUrl = 'http://localhost:8081';
     const [newProjectCode, setNewProjectCode] = useState('');
     const CATEGORY = [
         {
@@ -64,12 +65,17 @@ const PackageData = ({ dataBasename }) => {
         }
     }
 
-    const submitHandler = async (event) => {
-        event.preventDefault();
-    }
 
-    const handleExport = () => {
+    const handleExport = async (event) => {
+        event.preventDefault();
         setBtnPopUp(true);
+        try {
+            const data = await axios.post(`http://localhost:8081/api/dynamic-category/${choosedCategory}`);
+            console.log(data.data);
+        } catch (err) {
+            console.error("Error in fetching Category");
+        }
+
     }
 
 
@@ -77,7 +83,7 @@ const PackageData = ({ dataBasename }) => {
         <div className='form-container'>
             <div className="form-group">
                 <div className="package-data">
-                    <form action="" onSubmit={submitHandler}>
+                    <form onSubmit={handleExport}>
                         <label>Project Number
                             <input type="text" className='form-input' name='projectNo' value={newProjectCode} onChange={changeHandler} />
                         </label><br />
@@ -87,7 +93,7 @@ const PackageData = ({ dataBasename }) => {
                             </select></label>
                         <br />
                         <label>Package Clean category
-                            <input className="form-input" name="cleancat" value={choosedCategory} onChange={()=>{}}/></label><br />
+                            <input className="form-input" name="cleancat" value={choosedCategory} onChange={() => { }} /></label><br />
                         <label>Package Title
                             <input type="text" id="input-field" className="form-input" name="pactitle" onChange={changeHandler} value={inputs.pactitle || ""} /></label><br />
                         <label>RFQ Number
@@ -103,7 +109,7 @@ const PackageData = ({ dataBasename }) => {
                         <button type="Submit" className='form-btn' value="Export" onClick={handleExport}>Export</button>
                         {
                             (btnPopUp) && (
-                                <Popup trigger={btnPopUp} setTrigger={setBtnPopUp} setCategory={choosedCategory}></Popup>
+                                <Popup trigger={btnPopUp} setTrigger={setBtnPopUp} setCategory={choosedCategory} dataBasename={dataBasename}></Popup>
                             )
                         }
                     </form>
