@@ -48,7 +48,7 @@ const Login = () => {
       console.error("Error:", error);
     }
   };
-     
+
   return (
     <div className="login-body">
       <form onSubmit={handleSubmit} className="form">
@@ -89,9 +89,9 @@ const Login = () => {
           />
         </div>
 
-          <button type="submit" className="submit" onClick={handleSubmit}>
-            Login
-          </button>
+        <button type="submit" className="submit" onClick={handleSubmit}>
+          Login
+        </button>
       </form>
     </div>
   );
