@@ -48,7 +48,7 @@ const ProjectAccess = () => {
   // * fetching companies
   const fetchCompany = async () => {
     try {
-      const CompanyList = await axios.post("http://localhost:8081/api/fetch-user");
+      const CompanyList = await axios.get("http://localhost:8081/api/fetch-user");
       setDetail(CompanyList.data);
       const uniqueNames = [...new Set(CompanyList.data.map(company => company.company_name))];
       setUniqueCompanyName(uniqueNames);

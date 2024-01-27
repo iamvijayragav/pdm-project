@@ -43,6 +43,7 @@ const PackageData = ({ dataBasename }) => {
     const [choosedCategory, setChoosedCategory] = useState('TSA');
     const [inputs, setInputs] = useState({ 'prjcat': 'Topside Contractor - Category TSA' });
     const [btnPopUp, setBtnPopUp] = useState(false);
+    const [CombinedData, setCombinedData] = useState();
 
     const handleSelect = (e) => {
         for (let i = 0; i < CATEGORY.length; i++) {
@@ -68,17 +69,15 @@ const PackageData = ({ dataBasename }) => {
 
     const handleExport = async (event) => {
         event.preventDefault();
-        setBtnPopUp(true);
         try {
-            const data = await axios.post(`http://localhost:8081/api/dynamic-category/${choosedCategory}`);
-            console.log(data.data);
+            const data = await axios.get(`http://localhost:8081/api/dynamic-category/${choosedCategory}/${dataBasename}`);
+            setCombinedData(data.data);
         } catch (err) {
-            console.error("Error in fetching Category");
+            console.error("Error in fetching Category ");
         }
+        setBtnPopUp(true);
 
     }
-
-
     return (
         <div className='form-container'>
             <div className="form-group">
@@ -107,12 +106,12 @@ const PackageData = ({ dataBasename }) => {
                         <label>Document Title
                             <input type="text" id="input-field" className="form-input" name="doctitle" onChange={changeHandler} value={inputs.doctitle || ""} /></label><br />
                         <button type="Submit" className='form-btn' value="Export" onClick={handleExport}>Export</button>
-                        {
+                    </form>
+                    {
                             (btnPopUp) && (
-                                <Popup trigger={btnPopUp} setTrigger={setBtnPopUp} setCategory={choosedCategory} dataBasename={dataBasename}></Popup>
+                                <Popup trigger={btnPopUp} setTrigger={setBtnPopUp} setCategory={choosedCategory} dataBasename={dataBasename} WholeData={CombinedData}></Popup>
                             )
                         }
-                    </form>
                 </div>
             </div>
         </div>

@@ -80,19 +80,18 @@ app.get("/api/dynamic-category/:category/:db", async (req, res) => {
         const CategoryData = await CategoryContent.find({});
         const DocumentData = await DocumentContent.find({});
         const StakeHolderData = await StakeHolderContent.find({});
-        console.log(StakeHolderData, "stakeholder");
-        
+
         const combinedData = CategoryData.map(categoryItem => {
             const matchingDocument = DocumentData.find(documentItem => documentItem.New_SDRL_Code === categoryItem.New_SDRL_Code);
             const matchingStakeHolder = StakeHolderData.find(stakeItem => stakeItem.New_SDRL_Code === categoryItem.New_SDRL_Code);
-        
+
             return {
                 ...categoryItem.toObject(),
                 ...(matchingDocument ? matchingDocument.toObject() : {}),
                 ...(matchingStakeHolder ? matchingStakeHolder.toObject() : {})
             };
         });
-        console.log("Data",combinedData[0]);
+        console.log("Data", combinedData[10]);
         res.status(200).json(combinedData);
     } catch (err) {
         console.error("Error in fetching category", err);

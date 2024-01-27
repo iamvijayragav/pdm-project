@@ -31,7 +31,7 @@ const PopUp = (props) => {
 
     const FetchData = async () => {
         try {
-            const data = await axios.post(`http://localhost:8081/api/dynamic-category/${ChosenCategory}/${dataBasename}`);
+            const data = await axios.get(`http://localhost:8081/api/dynamic-category/${ChosenCategory}/${dataBasename}`);
             console.log(data.data);
            
         } catch (err) {
