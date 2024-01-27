@@ -35,7 +35,7 @@ function AddUser() {
 
   const fetchUser = async () => {
     try {
-      const response = await axios.post("http://localhost:8081/api/fetch-user");
+      const response = await axios.get("http://localhost:8081/api/fetch-user");
       setAddedRows(response.data);
     } catch (err) {
       console.error("Error in Fetching Users", err);

@@ -123,7 +123,7 @@ app.post("/add-project", AddingProject);
 
 app.post('/add-user', AddUser)
 
-app.post("/api/fetch-user", FetchUser);
+app.get("/api/fetch-user", FetchUser);
 
 app.get("/api/fetch-project", FetchProject);
 
