@@ -80,7 +80,7 @@ app.get("/api/dynamic-category/:category/:db", async (req, res) => {
         const CategoryData = await CategoryContent.find({});
         const DocumentData = await DocumentContent.find({});
         const StakeHolderData = await StakeHolderContent.find({});
-        console.log(StakeHolderData, "stakeddddddholder");
+        console.log(StakeHolderData, "stakeholder");
         
         const combinedData = CategoryData.map(categoryItem => {
             const matchingDocument = DocumentData.find(documentItem => documentItem.New_SDRL_Code === categoryItem.New_SDRL_Code);

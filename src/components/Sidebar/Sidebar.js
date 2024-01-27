@@ -13,16 +13,23 @@ const Sidebar = () => {
   const HandleProjectClick = (project) => {
     setIsProject(true);
     setSelectedProject(project)
+
+    try {
+      const DataBase = axios.get(`http://localhost:8081/api/dynamic-switch/${project}`)
+      console.log(DataBase);
+      
+    } catch (err) {
+      console.error("Error in Dynamic Db Switching",err);
+      
+    }
   };
 
   const CurrUser = localStorage.getItem('user_id');
 
-
-
   const FetchProjects = async () => {
     // * fetch all projects list
     try {
-      const Project = await axios.post('http://localhost:8081/api/fetch-project');
+      const Project = await axios.get('http://localhost:8081/api/fetch-project');
       return Project.data;
 
     } catch (err) {
@@ -35,9 +42,9 @@ const Sidebar = () => {
     // * fetch access to the projects
     const Projects = await FetchProjects();
     try {
-      const UserAccess = await axios.post('http://localhost:8081/api/fetch-project-access');
+      const UserAccess = await axios.get('http://localhost:8081/api/fetch-project-access');
       setMatchedProject(UserAccess.data);
-  
+
       const userProjects = UserAccess.data.filter(entry => entry.user_id === CurrUser);
   
       const userProjectCodes = userProjects.map(entry => entry.project_code);
