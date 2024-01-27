@@ -1,11 +1,19 @@
 import { React, useEffect, useState } from "react";
+import axios from "axios";
 
 const PopUp = (props) => {
 
     const ChosenCategory = props.setCategory;
+    const dataBasename = props.dataBasename;
+    const CombinedData = props.WholeData;
+    
+    // const [CombinedData, setCombinedData] = useState();
+    console.log(dataBasename, ChosenCategory);
+
     const [updatedValues, setUpdatedValues] = useState({
         sdrl_stakeholders_list: [],
     });
+
     const [exactValue, setExactValue] = useState({
         exact_stakeholders_list: [],
     });
@@ -19,6 +27,21 @@ const PopUp = (props) => {
         'Quality',
         'Regulatory_Compliance',
     ];
+
+
+    const FetchData = async () => {
+        try {
+            const data = await axios.post(`http://localhost:8081/api/dynamic-category/${ChosenCategory}/${dataBasename}`);
+            console.log(data.data);
+           
+        } catch (err) {
+            console.error("Error in fetching DataBase Content");
+        }
+    }
+
+    useEffect(() => {
+        // FetchData();
+    }, [])
 
     //* ========================================To get index of the dropdown modified location============================>
     const handleInputChange = (events) => {
@@ -61,35 +84,14 @@ const PopUp = (props) => {
             ],
         }));
     };
-    
+
     //* =====================>xxxxxxxxxxxxxxxxxxxxxxxx<================
 
     const handleSubmit = () => {
-       
+
     };
 
-    const [data, setData] = useState({
-        stakeHolder: [],
-        docContent: [],
-        category: [],
-    });
-
-    async function fetchData() {
-       
-    }
-
-    useEffect(() => {
-        fetchData();
-    },[]);
-
-    var WholeData = [];
-    data.category.forEach((cat) => {
-        let std = data.stakeHolder.filter((std) => std.New_SDRL_Code === cat.New_SDRL_Code);
-        let dct = data.docContent.filter((dct) => dct.New_SDRL_Code === cat.New_SDRL_Code)
-        let d = { ...cat, ...std[0], ...dct[0] };
-        WholeData.push(d);
-    });
-
+    console.log(CombinedData,"atdadad");
     return (props.trigger) ? (
         <div className="popup">
             <div className="popup-inner">
@@ -130,7 +132,7 @@ const PopUp = (props) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {WholeData.map((item, index) => {
+                            {CombinedData.map((item, index) => {
                                 return (
                                     <tr key={index}>
                                         <td>{item['New_SDRL_Code']}</td>
