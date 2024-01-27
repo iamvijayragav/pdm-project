@@ -21,6 +21,8 @@ const documentContent=new mongoose.Schema(
         Module_Area_Location: String,
         Definition_of_Quantity: String,
         Accepted_Format: String
+    }, {
+        collection:"Document_Content"
     }
 );
 // const DocContent = mongoose.model("Document_Content",documentContent);

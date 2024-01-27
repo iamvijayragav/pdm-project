@@ -13,8 +13,8 @@ const StakeHolderSchema=new mongoose.Schema(
         Pre_Ops_Operation:String,
 },
     {
-        collection:"Stake_holder",
+        collection:"Stake_Holder",
     }
 );
-const StakeData = mongoose.model("Stake_holder",StakeHolderSchema);
-module.exports = StakeData;
+
+module.exports = StakeHolderSchema;
