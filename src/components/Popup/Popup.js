@@ -18,6 +18,9 @@ const PopUp = (props) => {
         exact_stakeholders_list: [],
     });
 
+    const [yesItems, setYesItems] = useState([]);
+    const [changedYesItems,setChangedYesItems]=useState([]);
+
     const access = 'write';
 
     const fieldsToCheck = [
@@ -40,15 +43,22 @@ const PopUp = (props) => {
     }
 
     useEffect(() => {
-        // FetchData();
-    }, [])
+        // Filter the CombinedData array to include only items with 'Yes' initial value
+        const initialYesItems = CombinedData.filter(item => 
+            item[`${ChosenCategory}_Deliverable_Requirement`] === 'Yes'
+        );
+
+        setYesItems(initialYesItems);
+    }, [CombinedData, ChosenCategory]);
 
     //* ========================================To get index of the dropdown modified location============================>
     const handleInputChange = (events) => {
         const { target } = events.event;
         const { item } = events; //events.item
         const sdrlCode = item['New_SDRL_Code'];
+        console.log("sriharan checking of the sdrl code",sdrlCode);
         const list = fieldsToCheck.filter((field) => item[field] === 'A');
+        console.log("list changed value sriharan",list)
         const selectedValue = target.value;
 
         if (
@@ -67,6 +77,30 @@ const PopUp = (props) => {
             alert("You are unauthorized to change from 'No' to 'Yes'.");
         }
 
+        if (
+            selectedValue === 'Yes' &&
+            item[`${ChosenCategory}_Deliverable_Requirement`] !== 'Yes'
+        ) {
+            setYesItems((prev) => [
+                ...prev,
+                {
+                    'stake_holders': list,
+                    'items_value': item,
+                    'changed_value': selectedValue,
+                },
+            ]);
+            setChangedYesItems((prev) => [
+                ...prev,
+                {
+                    'stake_holders': list,
+                    'items_value': item,
+                    'changed_value': selectedValue,
+                },
+            ]);
+        }
+
+
+
         // * Create a new array containing only "Yes"
         const newArrayOfYes = exactValue.exact_stakeholders_list.filter(
             (entry) => entry.changed_value === "Yes"
@@ -82,16 +116,21 @@ const PopUp = (props) => {
                     'changed_value': selectedValue,
                 },
             ],
-        }));
+        }), () => {
+            // Logging the updated exact_stakeholders_list
+            console.log('Updated exact_stakeholders_list:', exactValue);
+        });
+        
     };
-
+    console.log("sriharan code yes items",yesItems)
+    console.log("current changed sriharan yes values",changedYesItems)
     //* =====================>xxxxxxxxxxxxxxxxxxxxxxxx<================
 
     const handleSubmit = () => {
 
     };
 
-    console.log(CombinedData,"atdadad");
+    // console.log(CombinedData,"atdadad");
     return (props.trigger) ? (
         <div className="popup">
             <div className="popup-inner">
