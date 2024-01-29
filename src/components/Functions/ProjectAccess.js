@@ -25,7 +25,7 @@ const ProjectAccess = () => {
   }
   const fetchProject = async () => {
     try {
-      const ProjectList = await axios.post("http://localhost:8081/api/fetch-project");
+      const ProjectList = await axios.get("http://localhost:8081/api/fetch-project");
       setProject(ProjectList.data);
     } catch (err) {
       console.error("Error in fetching Projects");

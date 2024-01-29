@@ -76,7 +76,6 @@ const PackageData = ({ dataBasename }) => {
             console.error("Error in fetching Category ");
         }
         setBtnPopUp(true);
-
     }
     return (
         <div className='form-container'>
@@ -108,10 +107,10 @@ const PackageData = ({ dataBasename }) => {
                         <button type="Submit" className='form-btn' value="Export" onClick={handleExport}>Export</button>
                     </form>
                     {
-                            (btnPopUp) && (
-                                <Popup trigger={btnPopUp} setTrigger={setBtnPopUp} setCategory={choosedCategory} dataBasename={dataBasename} WholeData={CombinedData}></Popup>
-                            )
-                        }
+                        (btnPopUp) && (
+                            <Popup trigger={btnPopUp} setTrigger={setBtnPopUp} setCategory={choosedCategory} dataBasename={dataBasename} WholeData={CombinedData}></Popup>
+                        )
+                    }
                 </div>
             </div>
         </div>
