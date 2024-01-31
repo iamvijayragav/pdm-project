@@ -44,7 +44,7 @@ function AddProject() {
     }
     try {
       const response = await axios.post('http://localhost:8081/add-project', formData);
-      alert('Project Added Successfully');
+      alert('Project Added/Updated Successfully');
     } catch (err) {
       console.error("Error Adding Project: ", err);
     }

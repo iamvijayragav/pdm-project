@@ -1,8 +1,8 @@
 const mongoose=require("mongoose");
 const Projects=new mongoose.Schema(
     {
-        project_name:String,
-        project_code:String,
+        project_name: { type: String, required: true },
+        project_code:{ type: String, required: true },
         database:String,
     },
     {
