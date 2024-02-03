@@ -1,8 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const MongoClient = require('mongodb');
 const cors = require('cors');
 const mongoose = require('mongoose');
-
 const app = express();
 const port = 8081;
 const { login, FetchProject, FetchUser, AddingProject, AddUser } = require('../Controller/LoginController');
@@ -10,17 +10,29 @@ const Project = require('../modals/Project');
 const User = require("../modals/UserInfo");
 const mongoUrl = "mongodb://localhost:27017/ProjectUserDetailDatabase";
 const FactoryModel = require('../modals/FactoryModel');
+const AddProject = require('../modals/AddProject');
+
+
+const stakeListSchema = new mongoose.Schema({
+    category: String,
+    email: String,
+}, {
+    collection:"StakeHolder_Mail_List",
+});
+
+// Create Mongoose model using the schema
+const StakeListModel = mongoose.model('StakeHolder_Mail_List', stakeListSchema);
 
 
 mongoose.connect(mongoUrl);
 
-const mainDbConnection = mongoose.connection;
+const MainDbConnection = mongoose.connection;
 
-mainDbConnection.on('error', (err) => {
+MainDbConnection.on('error', (err) => {
     console.error(`Error connecting to Master database: ${err}`);
 });
 
-mainDbConnection.once('open', () => {
+MainDbConnection.once('open', () => {
     console.log('Connected to Mater database');
 });
 
@@ -30,6 +42,107 @@ app.use(bodyParser.json());
 const createConnection = (dbName) => {
     return mongoose.createConnection(`mongodb://localhost:27017/${dbName}`);
 };
+
+async function copyDatabase(sourceDbName, destinationDbName) {
+    const sourceUrl = `mongodb://localhost/${sourceDbName}`;
+    const destinationUrl = `mongodb://localhost/${destinationDbName}`;
+
+    // Establish Mongoose connection to source database
+    await mongoose.connect(sourceUrl, { useNewUrlParser: true, useUnifiedTopology: true });
+
+    const sourceDb = mongoose.connection.db;
+
+    // Establish MongoDB client connection to destination database
+    const destinationClient = new MongoClient(destinationUrl, { useNewUrlParser: true, useUnifiedTopology: true });
+    await destinationClient.connect();
+
+    const destinationDb = destinationClient.db(destinationDbName);
+
+    // Get the list of collections in the source database
+    const collections = await sourceDb.listCollections().toArray();
+
+    for (const collectionInfo of collections) {
+        const collectionName = collectionInfo.name;
+
+        // Read documents from the source collection using Mongoose model
+        const SourceModel = mongoose.model(collectionName, new mongoose.Schema({}));
+        const documents = await SourceModel.find().lean().exec();
+
+        // Insert documents into the destination collection
+        await destinationDb.collection(collectionName).insertMany(documents);
+
+        console.log(`Data copied from ${sourceDbName}.${collectionName} to ${destinationDbName}.${collectionName}`);
+    }
+
+    console.log('Database copy completed.');
+
+    // Close connections
+    await mongoose.connection.close();
+    await destinationClient.close();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+app.get("/api/fetch-stake-mail", async (req, res) => {
+    try {
+        const Mail = await StakeListModel.find({});
+        return res.status(200).json(Mail);
+    } catch (err) {
+        res.status(500).json({Error:"Error in Fetching StakeHolders Email"})
+    }
+})
+
+app.post("/add-project", async (req, res) => {
+
+    const { projectCode, projectName } = req.body;
+    const dataBase = projectCode + '_' + projectName;
+
+    try {
+        const newProject = new AddProject({
+            project_code: projectCode,
+            project_name: projectName,
+            database: dataBase,
+        })
+        if (newProject) {
+            await newProject.save();
+            await copyDatabase(dataBase);
+        }
+        const savedProject = await newProject.save();
+        res.status(201).json(savedProject);
+
+    } catch (err) {
+        console.error("Error Adding Projects: ", err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+
 
 let currentTempDbConnection = null;
 app.get("/api/dynamic-switch/:db", async (req, res) => {
@@ -54,12 +167,7 @@ app.get("/api/dynamic-switch/:db", async (req, res) => {
 });
 
 app.get("/api/dynamic-category/:category/:db", async (req, res) => {
-
-    var WholeData = [];
-
-
     const { category, db } = req.params;
-    console.log(category, db, "cat");
     if (!currentTempDbConnection) {
         currentTempDbConnection = createConnection(db);
     }
@@ -99,7 +207,6 @@ app.get("/api/dynamic-category/:category/:db", async (req, res) => {
     }
 });
 
-
 app.post("/login", login);
 
 app.post("/verify", async (req, res) => {
@@ -117,9 +224,6 @@ app.post("/verify", async (req, res) => {
         res.send({ status: "error" }).status(409)
     }
 });
-
-
-app.post("/add-project", AddingProject);
 
 app.post('/add-user', AddUser)
 
@@ -159,7 +263,6 @@ app.post("/api/upload-access", async (req, res) => {
         res.send({ error: "Error in Giving Permissions" })
     }
 })
-
 
 app.get('/api/fetch-project-access', async (req, res) => {
     try {

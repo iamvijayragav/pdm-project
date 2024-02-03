@@ -1,26 +1,22 @@
 import { React, useEffect, useState } from "react";
 import axios from "axios";
+import emailjs from '@emailjs/browser';
 
-const PopUp = (props) => {
+const PopUp = ({ setCategory, WholeData, dataBasename, trigger, setTrigger }) => {
 
-    const ChosenCategory = props.setCategory;
-    const dataBasename = props.dataBasename;
-    const CombinedData = props.WholeData;
-    
-    // const [CombinedData, setCombinedData] = useState();
-    console.log(dataBasename, ChosenCategory);
-
-    const [updatedValues, setUpdatedValues] = useState({
-        sdrl_stakeholders_list: [],
-    });
-
-    const [exactValue, setExactValue] = useState({
-        exact_stakeholders_list: [],
-    });
-
+    const InitialYesItems = WholeData.filter(item =>
+        item[`${setCategory}_Deliverable_Requirement`] === 'Yes'
+    );
+    const InitialNoItems = WholeData.filter(item =>
+        item[`${setCategory}_Deliverable_Requirement`] === 'No'
+    );
+    const [ListYesItems, setListYesItems] = useState(InitialYesItems);
+    const [ListNoItems, setListNoItems] = useState(InitialNoItems);
+    const [ModifiedToNo, setModifiedToNo] = useState({ items: [], stakeHolders: [] });
+    const [MailList, setMailList] = useState();
     const access = 'write';
 
-    const fieldsToCheck = [
+    const fieldsToGetApprove = [
         'Engineering',
         'Construction',
         'Commissioning',
@@ -29,70 +25,261 @@ const PopUp = (props) => {
     ];
 
 
-    const FetchData = async () => {
-        try {
-            const data = await axios.get(`http://localhost:8081/api/dynamic-category/${ChosenCategory}/${dataBasename}`);
-            console.log(data.data);
-           
-        } catch (err) {
-            console.error("Error in fetching DataBase Content");
+
+
+
+    const handleInputChange = (events) => {
+        const { event, index, item, sdrlCode } = events;
+        const SelectedValue = event.target.value;
+
+        const GetApproval = (item) => {
+            const Result = fieldsToGetApprove.filter((field) => item[field] === 'A');
+            return Result;
+        }
+
+        if (item[`${setCategory}_Deliverable_Requirement`] === "Yes" &&
+            SelectedValue === "No") {
+
+            if (GetApproval(item).length === 0) {
+                alert("You Response was changed !");
+                setListNoItems((prevItem) => [
+                    ...prevItem,
+                    item,
+                ])
+                const FilteredYes = ListYesItems.filter(existingItem => existingItem['New_SDRL_Code'] !== item['New_SDRL_Code'])
+                setListYesItems(FilteredYes);
+            } else {
+                alert("You have to get the approval from", GetApproval(item));
+                setModifiedToNo((prevItem) => ({
+                    ...prevItem,
+                    items: [...prevItem.items, item],
+                    stakeHolders: [...prevItem.stakeHolders, GetApproval(item)],
+                }));
+            }
+
+        }
+        else if (item[`${setCategory}_Deliverable_Requirement`] === "If Applicable" &&
+            SelectedValue === "No") {
+            setListNoItems((prevItem) => [...prevItem, item]);
+        }
+        else {
+            if (item[`${setCategory}_Deliverable_Requirement`] === "No" && SelectedValue === "Yes") {
+                const FilteredNo = ListNoItems.filter((existingItem) => existingItem['New_SDRL_Code'] !== item['New_SDRL_Code'])
+                setListNoItems(FilteredNo);
+            }
+            setListYesItems((prevItem) => [
+                ...prevItem,
+                item,
+            ])
         }
     }
 
-    useEffect(() => {
-        // FetchData();
-    }, [])
-
-    //* ========================================To get index of the dropdown modified location============================>
-    const handleInputChange = (events) => {
-        const { target } = events.event;
-        const { item } = events; //events.item
-        const sdrlCode = item['New_SDRL_Code'];
-        const list = fieldsToCheck.filter((field) => item[field] === 'A');
-        const selectedValue = target.value;
-
-        if (
-            item[`${ChosenCategory}_Deliverable_Requirement`] === "Yes" &&
-            selectedValue === "No"
-        ) {
-            setUpdatedValues((prev) => ({
-                sdrl_stakeholders_list: [
-                    ...prev.sdrl_stakeholders_list,
-                    {
-                        'sdrlcode': sdrlCode,
-                        'stake_holders': list,
-                    },
-                ],
-            }))
-            alert("You are unauthorized to change from 'No' to 'Yes'.");
+    const FetchStakeEmail = async () => {
+        try {
+            const Mail = await axios.get("http://localhost:8081/api/fetch-stake-mail");
+            setMailList(Mail.data);
+            return Mail.data;
+        } catch (err) {
+            console.error("error in fetching stakeholder mail:", err);
         }
-
-        // * Create a new array containing only "Yes"
-        const newArrayOfYes = exactValue.exact_stakeholders_list.filter(
-            (entry) => entry.changed_value === "Yes"
-        );
-
-
-        setExactValue((prev) => ({
-            exact_stakeholders_list: [
-                ...prev.exact_stakeholders_list,
-                {
-                    'stake_holders': list,
-                    'items_value': item,
-                    'changed_value': selectedValue,
-                },
-            ],
-        }));
-    };
-
-    //* =====================>xxxxxxxxxxxxxxxxxxxxxxxx<================
+    }
+    FetchStakeEmail();
 
     const handleSubmit = () => {
 
+
+        // todo this is sample data we need to change once 
+        //* change the MailToSend name to ModifiedToNo
+        const MailToSend = {
+            "items": [
+                {
+                    "_id": "64c13735cb0b2fd1275ec15e",
+                    "New_SDRL_Code": "A01",
+                    "TSA_Deliverable_Requirement": "Yes",
+                    "TSA_Submit_with_Bid": "X",
+                    "TSA_Submit_for_Review_Approval": "2 WAPO",
+                    "TSA_IFI": "-",
+                    "TSA_As_Built": "-",
+                    "TSA_Final_Data_Submission": "2 WBD",
+                    "TSA_Document_Chain": "IFR",
+                    "TSA_DFO": "-",
+                    "TSA_IFS_DMS": "-",
+                    "TSA_IFS_CMMS": "-",
+                    "TSA_AVEVA_NET": "-",
+                    "Status": "Active",
+                    "Final_Book": "Final Documentation",
+                    "Document_Category": "Documents and 1D Engineering Registers",
+                    "Document_Type_Description": "Lists/ Registers, list of certificates",
+                    "Document_Description": "Supplier Master Document Register (SMDR)",
+                    "LCI_Requirement_Reference": "5.39",
+                    "SDRL_Reference": "A01",
+                    "Project_Code": "",
+                    "OrIginator_Code": "Note 2",
+                    "System_Code": "0",
+                    "Discipline": "A",
+                    "Document_Type": "LA",
+                    "Sequence_Number": "Note 5",
+                    "Prefix": "SMDR-",
+                    "Meaningful_title_for_Document": "Supplier Master Document Register",
+                    "Module_Area_Location": "(Vendor/Contractor can Propose)",
+                    "Definition_of_Quantity": "CON",
+                    "Accepted_Format": "Converted File -\nPDF / Native File - EXCEL",
+                    "Engineering": "A",
+                    "Construction": "N",
+                    "Commissioning": "N",
+                    "Quality": "N",
+                    "Regulatory_Compliance": "N",
+                    "Information_Data_Management": "A",
+                    "Life_Cycle_Information_LCI": "N",
+                    "ALM": "N",
+                    "Pre_Ops_Operation": "N"
+                },
+                {
+                    "_id": "64c13735cb0b2fd1275ec161",
+                    "New_SDRL_Code": "P01",
+                    "TSA_Deliverable_Requirement": "Yes",
+                    "TSA_Submit_with_Bid": "-",
+                    "TSA_Submit_for_Review_Approval": "2 WBHZ",
+                    "TSA_IFI": "-",
+                    "TSA_As_Built": "-",
+                    "TSA_Final_Data_Submission": "-",
+                    "TSA_Document_Chain": "IFR-IFC-IAB",
+                    "TSA_DFO": "-",
+                    "TSA_IFS_DMS": "-",
+                    "TSA_IFS_CMMS": "-",
+                    "TSA_AVEVA_NET": "-",
+                    "Status": "Active",
+                    "Final_Book": "Final Documentation",
+                    "Document_Category": "Documents and 1D Engineering Registers",
+                    "Document_Type_Description": "Analysis, test and calculations",
+                    "Document_Description": "Utility Demand Calculation (Change to Process)\n1) Nitrogen\n2) Instrument Air\n3) Potable Water\n4) Sea Water\n5) Fire Water",
+                    "LCI_Requirement_Reference": "TBD",
+                    "SDRL_Reference": "TBD",
+                    "Project_Code": "",
+                    "OrIginator_Code": "Note 2",
+                    "System_Code": "Note 3",
+                    "Discipline": "P",
+                    "Document_Type": "CA",
+                    "Sequence_Number": "Note 5",
+                    "Prefix": "-",
+                    "Meaningful_title_for_Document": "(Vendor/Contractor can Propose)",
+                    "Module_Area_Location": "(Vendor/Contractor can Propose)",
+                    "Definition_of_Quantity": "CON",
+                    "Accepted_Format": "Converted File -\nPDF / Native File - EXCEL",
+                    "Engineering": "A",
+                    "Construction": "N",
+                    "Commissioning": "N",
+                    "Quality": "N",
+                    "Regulatory_Compliance": "N",
+                    "Information_Data_Management": "A",
+                    "Life_Cycle_Information_LCI": "N",
+                    "ALM": "N",
+                    "Pre_Ops_Operation": "A"
+                },
+                {
+                    "_id": "64c13735cb0b2fd1275ec173",
+                    "New_SDRL_Code": "F03",
+                    "TSA_Deliverable_Requirement": "Yes",
+                    "TSA_Submit_with_Bid": "-",
+                    "TSA_Submit_for_Review_Approval": "2 WAPO",
+                    "TSA_IFI": "-",
+                    "TSA_As_Built": "-",
+                    "TSA_Final_Data_Submission": "-",
+                    "TSA_Document_Chain": "IFR-IFC",
+                    "TSA_DFO": "-",
+                    "TSA_IFS_DMS": "-",
+                    "TSA_IFS_CMMS": "-",
+                    "TSA_AVEVA_NET": "-",
+                    "Status": "Active",
+                    "Final_Book": "To be decided",
+                    "Document_Category": "Documents and 1D Engineering Registers",
+                    "Document_Type_Description": "Project Management and Control Documents",
+                    "Document_Description": "Project Execution Plan",
+                    "LCI_Requirement_Reference": "TBD",
+                    "SDRL_Reference": "A02",
+                    "Project_Code": "",
+                    "OrIginator_Code": "Note 2",
+                    "System_Code": "0",
+                    "Discipline": "F",
+                    "Document_Type": "TA",
+                    "Sequence_Number": "Note 5",
+                    "Prefix": "-",
+                    "Meaningful_title_for_Document": "(Vendor/Contractor can Propose)",
+                    "Module_Area_Location": "(Vendor/Contractor can Propose)",
+                    "Definition_of_Quantity": "CON",
+                    "Accepted_Format": "Converted File -\nPDF / Native File - WORD",
+                    "Engineering": "A",
+                    "Construction": "A",
+                    "Commissioning": "N",
+                    "Quality": "A",
+                    "Regulatory_Compliance": "N",
+                    "Information_Data_Management": "N",
+                    "Life_Cycle_Information_LCI": "N",
+                    "ALM": "N",
+                    "Pre_Ops_Operation": "N"
+                }
+            ],
+            "stakeHolders": [
+                [
+                    "Engineering"
+                ],
+                [
+                    "Engineering"
+                ],
+                [
+                    "Engineering",
+                    "Construction",
+                    "Quality"
+                ]
+            ]
+        }
+
+        const filteredData = {}
+        for (let index = 0; index < MailToSend.items.length; index++) {
+            for (let j = 0; j < MailToSend.stakeHolders[index].length; j++) {
+                const stakeholderCategory = MailToSend.stakeHolders[index][j];
+                if (!filteredData[stakeholderCategory]) {
+                    filteredData[stakeholderCategory] = [];
+                }
+                filteredData[stakeholderCategory].push(MailToSend.items[index]);
+            }
+        }
+
+        for (let index = 0; index < MailList.length; index++) {
+            const Category = MailList[index].category;
+
+            for (const itemKey in filteredData) {
+                if (itemKey === Category) {
+                    const Email = MailList[index].email;
+                    const Data = filteredData[itemKey];
+                    const message = {
+                        text: `Item Details:\n${JSON.stringify(Data, null, 2)}`,
+                        to: Email,
+                        subject: 'Checking Email',
+                    }
+
+                    emailjs.send('service_25082001', 'template_25082001', message, 'zNq2jzVJwaNAwPCTI')
+                        .then((result) => {
+                            console.log(result.text);
+                        }, (error) => {
+                            console.log(error.text);
+                        });
+                }
+            }
+        }
+
+
+        console.log("filter", MailList);
+
+
+        // console.log("final", filteredData);
+        // console.log("list yes", ListYesItems);
+        // console.log("list No", ListNoItems);
+        // console.log("list Modified to no", ModifiedToNo);
     };
 
-    console.log(CombinedData,"atdadad");
-    return (props.trigger) ? (
+    // console.log(CombinedData,"atdadad");
+    return (trigger) ? (
         <div className="popup">
             <div className="popup-inner">
                 <div className="data-table">
@@ -132,7 +319,7 @@ const PopUp = (props) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {CombinedData.map((item, index) => {
+                            {WholeData.map((item, index) => {
                                 return (
                                     <tr key={index}>
                                         <td>{item['New_SDRL_Code']}</td>
@@ -166,26 +353,26 @@ const PopUp = (props) => {
                                                             sdrlCode: item['New_SDRL_Code'],
                                                         })
                                                     }
-                                                    defaultValue={item[`${ChosenCategory}_Deliverable_Requirement`]}
+                                                    defaultValue={item[`${setCategory}_Deliverable_Requirement`]}
                                                 >
                                                     <option value={"No"}>No</option>
                                                     <option value={"Yes"}>Yes</option>
                                                     <option value={"If Applicable"}>If Applicable</option>
                                                 </select>
                                             ) : (
-                                                <div>{item[`${ChosenCategory}_Deliverable_Requirement`]}</div>
+                                                <div>{item[`${setCategory}_Deliverable_Requirement`]}</div>
                                             )}
                                         </td>
-                                        <td>{item[`${ChosenCategory}_Submit_with_Bid`]}</td>
-                                        <td>{item[`${ChosenCategory}_Submit_for_Review_Approitem`]}</td>
-                                        <td>{item[`${ChosenCategory}_IFI`]}</td>
-                                        <td>{item[`${ChosenCategory}_As_Built`]}</td>
-                                        <td>{item[`${ChosenCategory}_Final_Data_Submission`]}</td>
-                                        <td>{item[`${ChosenCategory}_Document_Chain`]}</td>
-                                        <td>{item[`${ChosenCategory}_DFO`]}</td>
-                                        <td>{item[`${ChosenCategory}_IFS_DMS`]}</td>
-                                        <td>{item[`${ChosenCategory}_IFS_CMMS`]}</td>
-                                        <td>{item[`${ChosenCategory}_AVEVA_NET`]}</td>
+                                        <td>{item[`${setCategory}_Submit_with_Bid`]}</td>
+                                        <td>{item[`${setCategory}_Submit_for_Review_Approitem`]}</td>
+                                        <td>{item[`${setCategory}_IFI`]}</td>
+                                        <td>{item[`${setCategory}_As_Built`]}</td>
+                                        <td>{item[`${setCategory}_Final_Data_Submission`]}</td>
+                                        <td>{item[`${setCategory}_Document_Chain`]}</td>
+                                        <td>{item[`${setCategory}_DFO`]}</td>
+                                        <td>{item[`${setCategory}_IFS_DMS`]}</td>
+                                        <td>{item[`${setCategory}_IFS_CMMS`]}</td>
+                                        <td>{item[`${setCategory}_AVEVA_NET`]}</td>
                                     </tr>
                                 );
                             })}
@@ -194,7 +381,7 @@ const PopUp = (props) => {
                 </div>
             </div>
             <button className="submit-btn" onClick={handleSubmit}>Submit</button>
-            <button className="close-btn" onClick={() => props.setTrigger(false)}>Close</button>
+            <button className="close-btn" onClick={() => setTrigger(false)}>Close</button>
         </div>
     ) : "";
 }
